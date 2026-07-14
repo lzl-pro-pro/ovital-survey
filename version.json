@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "download_url": "https://github.com/zl-pro-pro/ovital-survey/releases/latest/download/OvitalSurvey.exe",
+  "download_url": "https://github.com/lzl-pro-pro/ovital-survey/releases/latest/download/OvitalSurvey.exe",
   "release_date": "2026-07-14",
   "notes": "CAD坐标自动转经纬度、一键定位、备注自动提取、统一工程名/调查人、自动更新"
 }
