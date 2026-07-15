@@ -1,0 +1,14 @@
+.github_token
+__pycache__/
+build/
+dist/
+*.spec
+data/survey.db
+data/.export_dirs
+exports/*
+storage/uploads/*
+storage/photos/*
+logs/*
+!exports/.gitkeep
+!storage/.gitkeep
+!logs/.gitkeep
