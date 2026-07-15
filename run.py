@@ -83,7 +83,7 @@ def main():
                 current_exe = sys.executable if getattr(sys, 'frozen', False) else sys.argv[0]
                 apply_update(current_exe, new_exe)
                 print("  更新已就绪，程序即将重启...")
-                sys.exit(0)
+                os._exit(0)
         except Exception:
             pass  # 更新失败不影响正常使用
 
@@ -100,7 +100,7 @@ def main():
     local_ip = get_local_ip()
     print(f"""
 ╔══════════════════════════════════════════════════╗
-║      奥维互动地图 - 野外调查插件 v1.1.0        ║
+║      奥维互动地图 - 野外调查插件 v{VERSION}        ║
 ╚══════════════════════════════════════════════════╝
 
   本机访问: http://127.0.0.1:{SERVER_PORT}
