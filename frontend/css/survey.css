@@ -1,0 +1,188 @@
+/* ===== 调查点列表项 ===== */
+.point-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #F0F0F0;
+  transition: background 0.1s;
+  gap: 8px;
+}
+.point-item:hover { background: #F0F4FA; }
+.point-item.active { background: #D6E4F0; border-left: 3px solid var(--primary); }
+.point-item .point-status {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-pending { background: #F44336; }
+.status-in_progress { background: #FF9800; }
+.status-surveyed { background: #4CAF50; }
+.status-skipped { background: #9E9E9E; }
+.point-item .point-number {
+  font-size: 13px;
+  font-weight: 500;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.point-item .point-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ===== 调查表单布局 ===== */
+.survey-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 900px) {
+  .survey-layout { grid-template-columns: 1fr; }
+}
+
+.survey-form-container {
+  background: var(--bg-white);
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* ===== 表单字段 ===== */
+.form-group {
+  margin-bottom: 14px;
+}
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+.form-group label .required {
+  color: var(--danger);
+  margin-left: 2px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(68,114,196,0.15);
+}
+.form-group textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+.form-group .field-error {
+  border-color: var(--danger) !important;
+}
+.form-group .error-text {
+  font-size: 11px;
+  color: var(--danger);
+  margin-top: 2px;
+  display: none;
+}
+
+/* ===== 照片区 ===== */
+.survey-photo-container {
+  background: var(--bg-white);
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.survey-photo-container h3 {
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+.photo-upload-zone {
+  padding: 20px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+}
+.photo-upload-zone:hover {
+  border-color: var(--primary);
+}
+.photo-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.photo-card {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg);
+}
+.photo-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+.photo-card .photo-info {
+  padding: 6px 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.photo-card .photo-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 8px;
+  border-top: 1px solid #eee;
+}
+.photo-card .photo-actions button {
+  background: none;
+  border: none;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--primary);
+  padding: 2px 4px;
+}
+.photo-card .photo-actions button.delete-btn { color: var(--danger); }
+.photo-card .photo-caption {
+  font-size: 11px;
+  padding: 2px 8px 6px;
+  color: var(--text-secondary);
+}
+
+/* 上传进度 */
+.photo-upload-progress {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* 全屏查看 */
+.photo-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.photo-lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+}

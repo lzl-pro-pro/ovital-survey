@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>奥维野外调查插件</title>
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/survey.css">
+<link rel="stylesheet" href="css/components.css">
+<!-- 奥维 OPEN+ SDK（在奥维PC端内会自动加载，外部浏览器则跳过） -->
+<script src="https://open.ovital.com/api/omapjsSDK.js" onerror="console.log('[Ovital] SDK not available, using mock mode')"></script>
+</head>
+<body>
+
+<!-- ===== 顶部导航栏 ===== -->
+<header id="app-header">
+  <div class="header-left">
+    <span class="app-logo">🔍 野外调查</span>
+    <select id="project-selector" class="header-select">
+      <option value="">-- 选择项目 --</option>
+    </select>
+    <button id="btn-new-project" class="btn btn-sm" title="新建项目">＋新建</button>
+    <button id="btn-delete-project" class="btn btn-sm btn-danger" title="删除当前项目" style="display:none;">🗑删除</button>
+  </div>
+  <div class="header-right">
+    <button id="btn-batch-name" class="btn btn-sm" title="统一设置所有调查点的工程名称">🏷 统一工程名</button>
+    <button id="btn-batch-inv" class="btn btn-sm" title="统一设置所有调查点的调查人">👤 统一调查人</button>
+    <button id="btn-import-cad" class="btn btn-primary btn-sm">📂 导入CAD</button>
+    <button id="btn-export" class="btn btn-success btn-sm">📊 导出</button>
+    <button id="btn-export-csv" class="btn btn-sm" title="导出KMZ文件，导入奥维地图可查看调查点及照片">📍 导出到奥维</button>
+    <button id="btn-check-update" class="btn btn-sm" title="检查更新">🔄 检查更新</button>
+    <span id="sdk-status" class="status-badge" title="奥维SDK状态">🔌</span>
+  </div>
+</header>
+
+<!-- ===== 主体布局 ===== -->
+<div id="app-main">
+  <!-- 左侧面板：调查点列表 -->
+  <aside id="point-list-panel">
+    <div class="panel-header">
+      <h3>调查点列表</h3>
+      <div class="panel-tools">
+        <select id="status-filter" class="filter-select">
+          <option value="">全部</option>
+          <option value="pending">待调查</option>
+          <option value="in_progress">进行中</option>
+          <option value="surveyed">已完成</option>
+          <option value="skipped">已跳过</option>
+        </select>
+        <input type="text" id="search-input" class="search-input" placeholder="搜索编号...">
+      </div>
+    </div>
+    <div id="point-list-container" class="point-list-scroll">
+      <div class="empty-hint">请先选择项目并导入CAD</div>
+    </div>
+    <div class="panel-footer" id="point-stats">
+      共 <strong>0</strong> 个点 | 已完成: <strong>0</strong>
+    </div>
+  </aside>
+
+  <!-- 右侧内容区 -->
+  <main id="content-area">
+    <!-- 项目首页 -->
+    <div id="view-welcome" class="view active">
+      <div class="welcome-box">
+        <h2>欢迎使用奥维野外调查插件</h2>
+        <p>操作步骤：</p>
+        <ol>
+          <li>新建项目，导入CAD文件（DXF/DWG），自动解析标注</li>
+          <li>审核标注，确认生成调查点（CAD坐标自动转经纬度）</li>
+          <li>点击「导出到奥维」→ 奥维"系统 → 导入对象" → 点标记显示在地图上</li>
+          <li>逐一调查：点击「一键定位」获取GPS → 填写信息 → 拍照</li>
+          <li>导出Excel：统计汇总表 + 单张原始记录表</li>
+        </ol>
+        <p style="color:#666;font-size:12px;">
+          支持DXF和DWG格式；导出到奥维为KMZ格式含照片
+        </p>
+        <div id="welcome-stats" style="display:none;">
+          <h3>项目概况</h3>
+          <div class="stats-grid">
+            <div class="stat-card"><span class="stat-num" id="stat-total">0</span><span class="stat-label">总点数</span></div>
+            <div class="stat-card"><span class="stat-num" id="stat-surveyed">0</span><span class="stat-label">已完成</span></div>
+            <div class="stat-card"><span class="stat-num" id="stat-pending">0</span><span class="stat-label">待调查</span></div>
+            <div class="stat-card"><span class="stat-num" id="stat-progress">0</span><span class="stat-label">进行中</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 标注审核视图 -->
+    <div id="view-annotation-review" class="view" style="display:none;">
+      <div class="view-header">
+        <h2>CAD标注审核</h2>
+        <div class="view-tools">
+          <button id="btn-select-all-ann" class="btn btn-sm">全选</button>
+          <button id="btn-deselect-all-ann" class="btn btn-sm">取消全选</button>
+          <button id="btn-confirm-ann" class="btn btn-primary">确认并创建调查点</button>
+        </div>
+      </div>
+      <div id="annotation-info" class="info-bar"></div>
+      <div class="table-container">
+        <table id="annotation-table" class="data-table">
+          <thead>
+            <tr>
+              <th width="40"><input type="checkbox" id="check-all-ann"></th>
+              <th width="60">序号</th>
+              <th width="160">匹配编号</th>
+              <th width="200">原始文本</th>
+              <th width="100">CAD_X</th>
+              <th width="100">CAD_Y</th>
+              <th>图层</th>
+              <th width="80">类型</th>
+            </tr>
+          </thead>
+          <tbody id="annotation-tbody"></tbody>
+        </table>
+      </div>
+      <div id="annotation-pagination" class="pagination"></div>
+    </div>
+
+    <!-- 调查表单视图 -->
+    <div id="view-survey" class="view" style="display:none;">
+      <div class="view-header">
+        <h2 id="survey-point-title">调查点详情</h2>
+        <div class="view-tools">
+          <button id="btn-gps-locate" class="btn btn-primary btn-sm" title="一键获取当前位置GPS">📍 一键定位</button>
+          <button id="btn-save-draft" class="btn btn-outline">💾 保存草稿</button>
+          <button id="btn-mark-done" class="btn btn-success">✅ 标记完成</button>
+        </div>
+      </div>
+      <div class="survey-layout">
+        <div class="survey-form-container">
+          <form id="survey-form"></form>
+        </div>
+        <div class="survey-photo-container">
+          <h3>现场照片 <span id="photo-count">(0)</span></h3>
+          <div id="photo-upload-area" class="photo-upload-zone">
+            <input type="file" id="photo-file-input" accept="image/*" multiple capture="environment" style="display:none;">
+            <button id="btn-add-photo" class="btn btn-outline btn-block">📷 添加照片</button>
+            <p class="hint-text">支持拍照或选择图片文件</p>
+          </div>
+          <div id="photo-gallery" class="photo-gallery"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 导出视图 -->
+    <div id="view-export" class="view" style="display:none;">
+      <div class="view-header">
+        <h2>数据导出</h2>
+        <div class="view-tools">
+          <button id="btn-dir-kmz" class="btn btn-sm" title="设置导出到奥维的目录">📍 奥维导出目录</button>
+          <button id="btn-set-export-dir" class="btn btn-sm" title="设置Excel导出目录">📊 Excel导出目录</button>
+          <button id="btn-open-export-dir" class="btn btn-sm">📂 打开目录</button>
+        </div>
+      </div>
+      <div class="export-options">
+        <div class="export-card">
+          <h3>📊 统计汇总表</h3>
+          <p>生成所有调查点的汇总统计表，包含序号、编号、位置、GPS坐标、调查状态等信息。</p>
+          <button class="btn btn-primary export-trigger" data-type="summary">生成汇总表</button>
+        </div>
+        <div class="export-card">
+          <h3>📋 原始调查记录表</h3>
+          <p>为每个调查点生成独立的详细记录表（含照片）。打包为ZIP文件下载。</p>
+          <button class="btn btn-primary export-trigger" data-type="individual">生成记录表</button>
+        </div>
+        <div class="export-card">
+          <h3>📦 完整导出</h3>
+          <p>同时包含统计汇总表和所有原始记录表，打包下载。</p>
+          <button class="btn btn-success export-trigger" data-type="all">完整导出</button>
+        </div>
+      </div>
+      <div id="export-progress" class="export-progress" style="display:none;">
+        <div class="progress-bar"><div class="progress-fill" id="export-progress-fill"></div></div>
+        <p id="export-status-text">正在生成...</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ===== 模态层 ===== -->
+<div id="modal-overlay" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-title"></h3>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- ===== 消息提示 ===== -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- ===== JS 模块（按依赖顺序加载） ===== -->
+<script src="js/utils.js?v=3"></script>
+<script src="js/ovital-sdk.js?v=3"></script>
+<script src="js/api.js?v=3"></script>
+<script src="js/map.js?v=3"></script>
+<script src="js/cad-import.js?v=3"></script>
+<script src="js/survey-point-list.js?v=3"></script>
+<script src="js/survey-form.js?v=3"></script>
+<script src="js/photo-manager.js?v=3"></script>
+<script src="js/export.js?v=3"></script>
+<script src="js/app.js?v=3"></script>
+
+</body>
+</html>

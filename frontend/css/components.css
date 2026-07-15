@@ -1,0 +1,104 @@
+/* ===== 加载动画 ===== */
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== 加载覆盖层 ===== */
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.loading-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+
+/* ===== 按钮组 ===== */
+.btn-group {
+  display: flex;
+  gap: 0;
+}
+.btn-group .btn { border-radius: 0; }
+.btn-group .btn:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.btn-group .btn:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+
+/* ===== 文件上传样式 ===== */
+.file-upload-label {
+  display: inline-block;
+  cursor: pointer;
+}
+
+/* ===== 拖放区域高亮 ===== */
+.drop-highlight {
+  border-color: var(--primary) !important;
+  background: rgba(68,114,196,0.05) !important;
+}
+
+/* ===== 复选框美化 ===== */
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+/* ===== 徽章 ===== */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.badge-pending { background: #FFEBEE; color: #C62828; }
+.badge-in_progress { background: #FFF3E0; color: #E65100; }
+.badge-surveyed { background: #E8F5E9; color: #2E7D32; }
+.badge-skipped { background: #F5F5F5; color: #616161; }
+
+/* ===== 滚动条美化 ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #C0C0C0;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: #A0A0A0; }
+
+/* ===== 可编辑标注单元格 ===== */
+.editable-cell {
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+.editable-cell:hover { background: #E3F2FD; }
+.editable-cell.editing { background: #FFF9C4; }
+
+/* ===== 确认对话框 ===== */
+.confirm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* ===== 隐藏的文件输入 ===== */
+.hidden-file-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
