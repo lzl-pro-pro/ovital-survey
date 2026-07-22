@@ -62,7 +62,7 @@ def export_kmz(project_id):
         records = {r["field_key"]: r["field_value"] for r in detail.get("records", [])}
         photos = detail.get("photos", [])
 
-        # 构建描述HTML（照片作为附件，不在描述中嵌入避免奥维显示相机图标）
+        # 构建描述HTML（含照片，配合干净图标样式）
         remark = records.get("remarks", "")
         location = records.get("location_desc", "")
         desc_parts = [
@@ -75,8 +75,8 @@ def export_kmz(project_id):
         if location:
             desc_parts.append(f"位置: {location}<br/>")
 
-        # 照片放入 KMZ 附件（不在描述中显示，避免奥维误判为相机图标）
         if photos:
+            desc_parts.append("<hr/>")
             for pi, photo in enumerate(photos[:10]):
                 thumb_path = photo.get("thumbnail_path", "") or photo.get("storage_path", "")
                 if not thumb_path:
@@ -90,6 +90,9 @@ def export_kmz(project_id):
                         img_files.append((img_name, f.read()))
                     images_added[img_name] = True
                     photo_count += 1
+                desc_parts.append(
+                    f'<img src="{img_name}" width="300" style="margin:4px;border:1px solid #ccc;"/>'
+                )
 
         desc = "".join(desc_parts)
 
