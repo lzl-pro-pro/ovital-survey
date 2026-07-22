@@ -75,9 +75,8 @@ def export_kmz(project_id):
         if location:
             desc_parts.append(f"位置: {location}<br/>")
 
-        # 照片放入 KMZ 附件，描述中只显示数量
+        # 照片放入 KMZ 附件（不在描述中显示，避免奥维误判为相机图标）
         if photos:
-            valid_count = 0
             for pi, photo in enumerate(photos[:10]):
                 thumb_path = photo.get("thumbnail_path", "") or photo.get("storage_path", "")
                 if not thumb_path:
@@ -91,9 +90,6 @@ def export_kmz(project_id):
                         img_files.append((img_name, f.read()))
                     images_added[img_name] = True
                     photo_count += 1
-                    valid_count += 1
-            if valid_count > 0:
-                desc_parts.append(f"<br/>📷 现场照片: {valid_count}张（见KMZ附件）")
 
         desc = "".join(desc_parts)
 
