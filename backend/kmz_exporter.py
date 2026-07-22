@@ -1,10 +1,7 @@
 """KMZ导出模块 - 带照片的奥维地图标记"""
 
 import os
-import io
 import zipfile
-import base64
-import re
 from datetime import datetime
 from backend.data_manager import get_project, get_survey_points, get_point_detail
 from config import EXPORT_FOLDER, BASE_DIR
@@ -65,46 +62,40 @@ def export_kmz(project_id):
         records = {r["field_key"]: r["field_value"] for r in detail.get("records", [])}
         photos = detail.get("photos", [])
 
-        # 构建描述HTML（含照片）
+        # 构建描述HTML（照片作为附件，不在描述中嵌入避免奥维显示相机图标）
+        remark = records.get("remarks", "")
+        location = records.get("location_desc", "")
         desc_parts = [
             f"<b>{number}</b><br/>",
             f"状态: {status_label.get(status, status)}<br/>",
             f"经度: {lng:.6f}  纬度: {lat:.6f}<br/>",
         ]
-
-        remark = records.get("remarks", "")
-        location = records.get("location_desc", "")
         if remark:
             desc_parts.append(f"备注: {remark}<br/>")
         if location:
             desc_parts.append(f"位置: {location}<br/>")
 
-        # 嵌入照片
+        # 照片放入 KMZ 附件，描述中只显示数量
         if photos:
-            desc_parts.append("<hr/><b>现场照片:</b><br/>")
-            for pi, photo in enumerate(photos[:10]):  # 最多10张
+            valid_count = 0
+            for pi, photo in enumerate(photos[:10]):
                 thumb_path = photo.get("thumbnail_path", "") or photo.get("storage_path", "")
                 if not thumb_path:
                     continue
-
                 full_path = os.path.normpath(os.path.join(BASE_DIR, str(thumb_path)))
                 if not os.path.isfile(full_path):
                     continue
-
-                # 读图片并加到KMZ
                 img_name = f"photos/{point['id']}_{pi}.jpg"
                 if img_name not in images_added:
                     with open(full_path, "rb") as f:
                         img_files.append((img_name, f.read()))
                     images_added[img_name] = True
                     photo_count += 1
-
-                desc_parts.append(
-                    f'<img src="{img_name}" width="300" style="margin:4px;border:1px solid #ccc;"/>'
-                )
+                    valid_count += 1
+            if valid_count > 0:
+                desc_parts.append(f"<br/>📷 现场照片: {valid_count}张（见KMZ附件）")
 
         desc = "".join(desc_parts)
-        desc = re.sub(r'<hr/>$', '', desc)
 
         kml_parts.append('  <Placemark>')
         kml_parts.append(f'    <name>{number}</name>')
