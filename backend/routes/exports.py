@@ -194,78 +194,12 @@ def api_export_csv(project_id):
 
 @exports_bp.route("/<int:project_id>/export-kmz", methods=["GET"])
 def api_export_kmz(project_id):
-    """导出KMZ文件（奥维地图标记）；有照片时KMZ和照片文件夹放一起打包"""
-    import shutil
-    from datetime import datetime
-    from backend.data_manager import get_survey_points, get_point_detail
-
+    """导出KMZ文件（奥维地图标记，含照片）"""
     try:
         kmz_path = export_kmz(project_id)
-
-        # 检查是否有照片
-        result = get_survey_points(project_id, per_page=10000)
-        has_photos = False
-        for pt in result["items"]:
-            detail = get_point_detail(pt["id"]) or {}
-            if detail.get("photos"):
-                has_photos = True
-                break
-
-        dest_dir = _get_export_dir("kmz")
-
-        if has_photos:
-            # 创建导出文件夹结构: KMZ + 现场照片/
-            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-            export_dir = os.path.join(EXPORT_FOLDER, f"奥维导出_{ts}")
-            os.makedirs(export_dir, exist_ok=True)
-
-            # 复制 KMZ
-            kmz_dest = os.path.join(export_dir, os.path.basename(kmz_path))
-            shutil.copy2(kmz_path, kmz_dest)
-
-            # 收集照片到 现场照片/ 子目录
-            photos_dir = os.path.join(export_dir, "现场照片")
-            os.makedirs(photos_dir, exist_ok=True)
-
-            for pt in result["items"]:
-                detail = get_point_detail(pt["id"]) or {}
-                pt_photos = detail.get("photos", [])
-                if not pt_photos:
-                    continue
-
-                number = str(pt.get("point_number", pt["id"]))
-                safe_number = number.replace("/", "_").replace("\\", "_").replace(":", "_")
-                pt_photos_dir = os.path.join(photos_dir, safe_number)
-                os.makedirs(pt_photos_dir, exist_ok=True)
-
-                for pi, photo in enumerate(pt_photos):
-                    storage_path = photo.get("storage_path", "")
-                    if not storage_path:
-                        continue
-                    src = os.path.normpath(os.path.join(BASE_DIR, str(storage_path)))
-                    if not os.path.isfile(src):
-                        continue
-                    ext = os.path.splitext(src)[1] or ".jpg"
-                    shutil.copy2(src, os.path.join(pt_photos_dir, f"{pi+1:02d}{ext}"))
-
-            # 打包整个文件夹
-            zip_name = f"奥维导出_{ts}.zip"
-            zip_path = os.path.join(EXPORT_FOLDER, zip_name)
-            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-                for root, dirs, files in os.walk(export_dir):
-                    for fname in files:
-                        full = os.path.join(root, fname)
-                        arcname = os.path.relpath(full, EXPORT_FOLDER)
-                        zf.write(full, arcname)
-
-            zip_path = _move_export(zip_path, dest_dir)
-            return send_file(zip_path, as_attachment=True,
-                             download_name=os.path.basename(zip_path))
-        else:
-            # 无照片 → 只发 KMZ
-            kmz_path = _move_export(kmz_path, dest_dir)
-            return send_file(kmz_path, as_attachment=True,
-                             download_name=os.path.basename(kmz_path))
+        kmz_path = _move_export(kmz_path, _get_export_dir("kmz"))
+        return send_file(kmz_path, as_attachment=True,
+                         download_name=os.path.basename(kmz_path))
     except ValueError as e:
         return jsonify({"error": True, "code": "EXPORT_FAILED", "message": str(e)}), 400
 
