@@ -146,7 +146,10 @@ def export_photos_zip(project_id):
                 continue
 
             number = str(point.get("point_number", point["id"]))
-            safe_number = number.replace("/", "_").replace("\\", "_").replace(":", "_")
+            safe_number = number
+            for ch in '/\\:*?"<>|\n\r\t':
+                safe_number = safe_number.replace(ch, "_")
+            safe_number = safe_number.strip(". ")
 
             for pi, photo in enumerate(photos):
                 storage_path = photo.get("storage_path", "")

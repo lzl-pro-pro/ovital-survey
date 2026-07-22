@@ -231,7 +231,10 @@ def api_export_kmz(project_id):
             if not pt_photos:
                 continue
             number = str(pt.get("point_number", pt["id"]))
-            safe = number.replace("/", "_").replace("\\", "_").replace(":", "_")
+            safe = number
+            for ch in '/\\:*?"<>|\n\r\t':
+                safe = safe.replace(ch, "_")
+            safe = safe.strip(". ")
             pt_dir = os.path.join(photos_dir, safe)
             os.makedirs(pt_dir, exist_ok=True)
             for pi, photo in enumerate(pt_photos):
