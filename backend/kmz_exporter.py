@@ -76,7 +76,10 @@ def export_kmz(project_id):
             desc_parts.append(f"位置: {location}<br/>")
 
         if photos:
-            desc_parts.append("<hr/>")
+            desc_parts.append(
+                f"<hr/>📷 现场照片 ({min(len(photos), 10)}张) — "
+                f"照片文件见同目录下 现场照片.zip<br/>"
+            )
             for pi, photo in enumerate(photos[:10]):
                 thumb_path = photo.get("thumbnail_path", "") or photo.get("storage_path", "")
                 if not thumb_path:
@@ -90,9 +93,6 @@ def export_kmz(project_id):
                         img_files.append((img_name, f.read()))
                     images_added[img_name] = True
                     photo_count += 1
-                desc_parts.append(
-                    f'<img src="{img_name}" width="300" style="margin:4px;border:1px solid #ccc;"/>'
-                )
 
         desc = "".join(desc_parts)
 
