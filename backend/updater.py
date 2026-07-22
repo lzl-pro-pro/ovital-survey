@@ -10,21 +10,28 @@ import subprocess
 import shutil
 
 
-def check_update(current_version, update_url):
-    """检查是否有新版本，返回 (has_update, latest_version, download_url)"""
-    try:
-        req = urllib.request.Request(update_url, headers={
-            "User-Agent": "OvitalSurvey-Updater/1.0"
-        })
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-        latest = data.get("version", "")
-        dl_url = data.get("download_url", "")
+def check_update(current_version, update_urls):
+    """检查是否有新版本，多个URL依次尝试，返回 (has_update, latest_version, download_url)"""
+    # 兼容旧版单个URL
+    if isinstance(update_urls, str):
+        update_urls = [update_urls]
 
-        has_update = _version_newer(latest, current_version)
-        return has_update, latest, dl_url
-    except Exception:
-        return False, "", ""
+    for url in update_urls:
+        try:
+            req = urllib.request.Request(url, headers={
+                "User-Agent": "OvitalSurvey-Updater/1.0"
+            })
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+            latest = data.get("version", "")
+            dl_url = data.get("download_url", "")
+
+            has_update = _version_newer(latest, current_version)
+            return has_update, latest, dl_url
+        except Exception:
+            continue  # 尝试下一个URL
+
+    return False, "", ""
 
 
 def download_update(download_url, progress_callback=None):

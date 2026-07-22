@@ -56,7 +56,7 @@ def create_app():
     from backend.routes.photos import photos_bp
     from backend.routes.exports import exports_bp
     from backend.routes.templates import templates_bp
-    from config import VERSION, UPDATE_URL
+    from config import VERSION, UPDATE_URLS
 
     app.register_blueprint(projects_bp, url_prefix="/api/projects")
     app.register_blueprint(annotations_bp, url_prefix="/api/projects")
@@ -84,32 +84,34 @@ def create_app():
 
     @app.route("/api/version")
     def api_version():
-        return jsonify({"version": VERSION, "update_url": UPDATE_URL})
+        return jsonify({"version": VERSION, "update_url": UPDATE_URLS[0]})
 
     @app.route("/api/check-update")
     def api_check_update():
         import urllib.request
-        try:
-            req = urllib.request.Request(UPDATE_URL)
-            with urllib.request.urlopen(req, timeout=5) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-            latest = data.get("version", "")
-            is_new = _version_newer(latest, VERSION)
-            return jsonify({
-                "error": False,
-                "current": VERSION,
-                "latest": latest,
-                "has_update": is_new,
-                "download_url": data.get("download_url", ""),
-            })
-        except Exception:
-            return jsonify({
-                "error": False,
-                "current": VERSION,
-                "latest": "",
-                "has_update": False,
-                "message": "无法连接到更新服务器"
-            })
+        for url in UPDATE_URLS:
+            try:
+                req = urllib.request.Request(url)
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                latest = data.get("version", "")
+                is_new = _version_newer(latest, VERSION)
+                return jsonify({
+                    "error": False,
+                    "current": VERSION,
+                    "latest": latest,
+                    "has_update": is_new,
+                    "download_url": data.get("download_url", ""),
+                })
+            except Exception:
+                continue
+        return jsonify({
+            "error": False,
+            "current": VERSION,
+            "latest": "",
+            "has_update": False,
+            "message": "无法连接到更新服务器"
+        })
 
     @app.route("/api/do-update", methods=["POST"])
     def api_do_update():
@@ -117,7 +119,7 @@ def create_app():
         from backend.updater import check_update, download_update, apply_update
         import sys as _sys
         try:
-            has, latest, dl_url = check_update(VERSION, UPDATE_URL)
+            has, latest, dl_url = check_update(VERSION, UPDATE_URLS)
             if not has:
                 return jsonify({"error": True, "message": "已经是最新版本"})
             new_exe = download_update(dl_url)

@@ -1,6 +1,6 @@
 {
-  "version": "1.3.0",
-  "download_url": "https://github.com/lzl-pro-pro/ovital-survey/releases/download/v1.3.0/OvitalSurvey.exe",
+  "version": "1.3.1",
+  "download_url": "https://github.com/lzl-pro-pro/ovital-survey/releases/download/v1.3.1/OvitalSurvey.exe",
   "release_date": "2026-07-22",
-  "notes": "更名为CAD转换插件; 调查点上限5000; KMZ照片可见+原图打包; 修复各种导出bug"
+  "notes": "更新检测改用jsDelivr CDN(国内可用)+GitHub双通道; 文件名校验修复"
 }

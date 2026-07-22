@@ -21,7 +21,7 @@ from backend.server import create_app
 from backend.updater import check_update, download_update, apply_update
 from config import (
     SERVER_HOST, SERVER_PORT, DEBUG, ensure_directories,
-    BASE_DIR, DWG_CONVERTER_PATH, VERSION, UPDATE_URL
+    BASE_DIR, DWG_CONVERTER_PATH, VERSION, UPDATE_URLS
 )
 
 
@@ -71,7 +71,7 @@ def main():
     # 检查更新（后台静默进行）
     def _do_update_check():
         try:
-            has, latest, dl_url = check_update(VERSION, UPDATE_URL)
+            has, latest, dl_url = check_update(VERSION, UPDATE_URLS)
             if has:
                 print(f"""
   ╔══════════════════════════════════════════╗

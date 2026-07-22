@@ -10,9 +10,12 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Flask 服务配置
-VERSION = "1.3.0"
-# 更新服务器URL（指向 version.json）
-UPDATE_URL = "https://raw.githubusercontent.com/lzl-pro-pro/ovital-survey/main/version.json"
+VERSION = "1.3.1"
+# 更新服务器URL（按优先级：jsDelivr CDN国内更快，GitHub Raw备用）
+UPDATE_URLS = [
+    "https://cdn.jsdelivr.net/gh/lzl-pro-pro/ovital-survey@main/version.json",
+    "https://raw.githubusercontent.com/lzl-pro-pro/ovital-survey/main/version.json",
+]
 
 SERVER_HOST = os.environ.get("OVITAL_HOST", "0.0.0.0")  # 0.0.0.0 允许局域网访问
 SERVER_PORT = int(os.environ.get("OVITAL_PORT", 8800))
