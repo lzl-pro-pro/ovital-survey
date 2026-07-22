@@ -449,7 +449,7 @@ def export_individual(project_id, point_ids=None):
         ws.page_setup.fitToHeight = 0
 
         # 保存
-        safe_name = point["point_number"].replace("/", "_").replace("\\", "_")
+        safe_name = point["point_number"].replace("/", "_").replace("\\", "_").replace(":", "_")
         filepath = os.path.join(record_dir, f"{safe_name}.xlsx")
         wb.save(filepath)
 
