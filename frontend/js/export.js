@@ -100,7 +100,7 @@ const ExportModule = (function () {
       return;
     }
 
-    Utils.toast("正在生成KMZ...", "info");
+    Utils.toast("正在生成...", "info");
     var url = "/api/projects/" + projectId + "/export-kmz";
     var a = document.createElement("a");
     a.href = url;
@@ -109,7 +109,7 @@ const ExportModule = (function () {
     a.click();
     document.body.removeChild(a);
     setTimeout(function() {
-      Utils.toast('KMZ已导出！奥维菜单: 系统 -> 导入对象', "success");
+      Utils.toast('导出完成！奥维菜单: 系统 -> 导入对象 -> 选KMZ文件', "success");
     }, 1000);
   }
 

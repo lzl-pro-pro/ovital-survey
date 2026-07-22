@@ -119,6 +119,51 @@ def export_kmz(project_id):
     return filepath
 
 
+def export_photos_zip(project_id):
+    """导出调查点原始照片，按点编号分文件夹，打包为ZIP"""
+    project = get_project(project_id)
+    if not project:
+        raise ValueError("项目不存在")
+
+    result = get_survey_points(project_id, per_page=10000)
+    points = result["items"]
+
+    os.makedirs(EXPORT_FOLDER, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    zip_name = f"现场照片_{project['name']}_{timestamp}.zip"
+    zip_path = os.path.join(EXPORT_FOLDER, zip_name)
+
+    photo_count = 0
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+        for point in points:
+            detail = get_point_detail(point["id"]) or {}
+            photos = detail.get("photos", [])
+            if not photos:
+                continue
+
+            number = str(point.get("point_number", point["id"]))
+            safe_number = number.replace("/", "_").replace("\\", "_").replace(":", "_")
+
+            for pi, photo in enumerate(photos):
+                storage_path = photo.get("storage_path", "")
+                if not storage_path:
+                    continue
+                full_path = os.path.normpath(os.path.join(BASE_DIR, str(storage_path)))
+                if not os.path.isfile(full_path):
+                    continue
+
+                ext = os.path.splitext(full_path)[1] or ".jpg"
+                arcname = f"{safe_number}/{pi+1:02d}{ext}"
+                zf.write(full_path, arcname)
+                photo_count += 1
+
+    if photo_count == 0:
+        os.remove(zip_path)
+        return None
+
+    return zip_path
+
+
 def _escape(text):
     text = str(text or "")
     text = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")

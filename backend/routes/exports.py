@@ -3,6 +3,7 @@
 import os
 import json
 import uuid
+import zipfile
 import threading
 from flask import Blueprint, request, jsonify, send_file
 from backend.data_manager import get_project
@@ -11,7 +12,7 @@ from backend.excel_exporter import (
 )
 from backend.kml_exporter import export_kml
 from backend.csv_exporter import export_csv
-from backend.kmz_exporter import export_kmz
+from backend.kmz_exporter import export_kmz, export_photos_zip
 from config import EXPORT_FOLDER, BASE_DIR
 import subprocess as _sp
 
@@ -193,12 +194,32 @@ def api_export_csv(project_id):
 
 @exports_bp.route("/<int:project_id>/export-kmz", methods=["GET"])
 def api_export_kmz(project_id):
-    """导出KMZ文件（奥维地图带照片标记）"""
+    """导出KMZ文件（奥维地图标记）；有照片时一并打包照片ZIP"""
+    from datetime import datetime
+    import shutil
     try:
-        file_path = export_kmz(project_id)
-        file_path = _move_export(file_path, _get_export_dir("kmz"))
-        return send_file(file_path, as_attachment=True,
-                         download_name=os.path.basename(file_path))
+        kmz_path = export_kmz(project_id)
+        photo_zip = export_photos_zip(project_id)
+
+        dest_dir = _get_export_dir("kmz")
+
+        if photo_zip:
+            # 有照片 → 打包 KMZ + 照片 到一个 ZIP
+            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            combined_name = f"奥维导出_{ts}.zip"
+            combined_path = os.path.join(EXPORT_FOLDER, combined_name)
+            with zipfile.ZipFile(combined_path, "w", zipfile.ZIP_DEFLATED) as zf:
+                zf.write(kmz_path, os.path.basename(kmz_path))
+                zf.write(photo_zip, os.path.basename(photo_zip))
+            # 移到自定义目录
+            combined_path = _move_export(combined_path, dest_dir)
+            return send_file(combined_path, as_attachment=True,
+                             download_name=os.path.basename(combined_path))
+        else:
+            # 无照片 → 只发 KMZ
+            kmz_path = _move_export(kmz_path, dest_dir)
+            return send_file(kmz_path, as_attachment=True,
+                             download_name=os.path.basename(kmz_path))
     except ValueError as e:
         return jsonify({"error": True, "code": "EXPORT_FAILED", "message": str(e)}), 400
 
