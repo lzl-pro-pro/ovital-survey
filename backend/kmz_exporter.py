@@ -33,21 +33,21 @@ def export_kmz(project_id):
         f'  <name>{_escape(project["name"])} - 调查点</name>',
     ]
 
-    # 图钉图标样式 — 白色图钉 + 颜色叠加 = 各色图钉
-    # KML颜色格式: aabbggrr
+    # 图钉图标样式 — 直接用彩色图钉，不用颜色叠加（避免奥维误判为相机图标）
+    # KML颜色格式: aabbggrr (仅用于文字标签)
     icon_styles = {
-        "pending":     {"color": "ff0000ff", "icon": "http://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png"},
-        "in_progress": {"color": "ff00aaff", "icon": "http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png"},
-        "surveyed":    {"color": "ff00ff00", "icon": "http://maps.google.com/mapfiles/kml/pushpin/grn-pushpin.png"},
-        "skipped":     {"color": "ff888888", "icon": "http://maps.google.com/mapfiles/kml/pushpin/wht-pushpin.png"},
+        "pending":     {"label_color": "ff0000ff", "icon": "http://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png"},
+        "in_progress": {"label_color": "ff00aaff", "icon": "http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png"},
+        "surveyed":    {"label_color": "ff00ff00", "icon": "http://maps.google.com/mapfiles/kml/pushpin/grn-pushpin.png"},
+        "skipped":     {"label_color": "ff888888", "icon": "http://maps.google.com/mapfiles/kml/pushpin/wht-pushpin.png"},
     }
     for sid, style in icon_styles.items():
-        color = style["color"]
         icon_url = style["icon"]
+        label_color = style["label_color"]
         kml_parts.append(f'  <Style id="s_{sid}">')
-        kml_parts.append(f'    <IconStyle><color>{color}</color><scale>1.2</scale>'
+        kml_parts.append(f'    <IconStyle><scale>1.2</scale>'
                          f'<Icon><href>{icon_url}</href></Icon></IconStyle>')
-        kml_parts.append(f'    <LabelStyle><color>{color}</color><scale>0.9</scale></LabelStyle>')
+        kml_parts.append(f'    <LabelStyle><color>{label_color}</color><scale>0.9</scale></LabelStyle>')
         kml_parts.append(f'  </Style>')
 
     photo_count = 0
