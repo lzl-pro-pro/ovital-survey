@@ -33,13 +33,20 @@ def export_kmz(project_id):
         f'  <name>{_escape(project["name"])} - 调查点</name>',
     ]
 
-    # 图标样式
-    colors = {"pending": "ff0000ff", "in_progress": "ff00aaff",
-              "surveyed": "ff00ff00", "skipped": "ff888888"}
-    for sid, color in colors.items():
+    # 图钉图标样式 — 白色图钉 + 颜色叠加 = 各色图钉
+    # KML颜色格式: aabbggrr
+    icon_styles = {
+        "pending":     {"color": "ff0000ff", "icon": "http://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png"},
+        "in_progress": {"color": "ff00aaff", "icon": "http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png"},
+        "surveyed":    {"color": "ff00ff00", "icon": "http://maps.google.com/mapfiles/kml/pushpin/grn-pushpin.png"},
+        "skipped":     {"color": "ff888888", "icon": "http://maps.google.com/mapfiles/kml/pushpin/wht-pushpin.png"},
+    }
+    for sid, style in icon_styles.items():
+        color = style["color"]
+        icon_url = style["icon"]
         kml_parts.append(f'  <Style id="s_{sid}">')
         kml_parts.append(f'    <IconStyle><color>{color}</color><scale>1.2</scale>'
-                         '<Icon><href>http://maps.google.com/mapfiles/kml/paddle/red-circle.png</href></Icon></IconStyle>')
+                         f'<Icon><href>{icon_url}</href></Icon></IconStyle>')
         kml_parts.append(f'    <LabelStyle><color>{color}</color><scale>0.9</scale></LabelStyle>')
         kml_parts.append(f'  </Style>')
 
@@ -80,8 +87,8 @@ def export_kmz(project_id):
                 if not thumb_path:
                     continue
 
-                full_path = os.path.join(BASE_DIR, thumb_path)
-                if not os.path.exists(full_path):
+                full_path = os.path.normpath(os.path.join(BASE_DIR, str(thumb_path)))
+                if not os.path.isfile(full_path):
                     continue
 
                 # 读图片并加到KMZ

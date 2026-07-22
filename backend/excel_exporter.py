@@ -3,6 +3,7 @@
 import os
 import io
 import json
+import logging
 import zipfile
 from datetime import datetime
 from openpyxl import Workbook
@@ -11,11 +12,14 @@ from openpyxl.styles import (
 )
 from openpyxl.drawing.image import Image as XLImage
 from openpyxl.utils import get_column_letter
+from PIL import Image as PILImage
 from backend.data_manager import (
     get_project, get_survey_points, get_point_detail,
     get_project_stats, get_project_photos, get_default_template
 )
 from config import EXPORT_FOLDER, BASE_DIR
+
+logger = logging.getLogger(__name__)
 
 
 # ============ 样式常量 ============
@@ -68,6 +72,28 @@ def _auto_width(ws, min_width=8, max_width=40):
                 max_len = max(max_len, length)
         adjusted = min(max(max_len + 2, min_width), max_width)
         ws.column_dimensions[col_letter].width = adjusted
+
+
+def _safe_xl_image(photo_path):
+    """安全加载图片为 openpyxl Image 对象，兼容各种格式"""
+    try:
+        # 直接尝试 openpyxl 加载
+        return XLImage(photo_path)
+    except Exception as e1:
+        try:
+            # PIL 兜底：打开 → 转RGB → 存为PNG到内存 → 再用 openpyxl 加载
+            pil_img = PILImage.open(photo_path)
+            if pil_img.mode in ("RGBA", "P", "LA", "PA"):
+                pil_img = pil_img.convert("RGBA")
+            else:
+                pil_img = pil_img.convert("RGB")
+            buf = io.BytesIO()
+            pil_img.save(buf, format="PNG")
+            buf.seek(0)
+            return XLImage(buf)
+        except Exception as e2:
+            logger.warning(f"照片加载失败: {photo_path} | 原始错误: {e1} | PIL兜底: {e2}")
+            return None
 
 
 def export_summary(project_id, point_ids=None):
@@ -365,26 +391,26 @@ def export_individual(project_id, point_ids=None):
                 # 尝试插入照片缩略图
                 photo_path = None
                 if photo.get("thumbnail_path"):
-                    p = os.path.join(BASE_DIR, photo["thumbnail_path"])
-                    if os.path.exists(p):
+                    p = os.path.normpath(os.path.join(BASE_DIR, str(photo["thumbnail_path"])))
+                    if os.path.isfile(p):
                         photo_path = p
                 if not photo_path and photo.get("storage_path"):
-                    p = os.path.join(BASE_DIR, photo["storage_path"])
-                    if os.path.exists(p):
+                    p = os.path.normpath(os.path.join(BASE_DIR, str(photo["storage_path"])))
+                    if os.path.isfile(p):
                         photo_path = p
 
                 if photo_path:
-                    try:
-                        img = XLImage(photo_path)
+                    img = _safe_xl_image(photo_path)
+                    if img:
                         # 限制图片大小
                         img.width = min(img.width, 200)
                         img.height = min(img.height, 150)
                         anchor_cell = f"{get_column_letter(col)}{current_row}"
                         ws.add_image(img, anchor_cell)
                         current_row += 12  # 给图片留空间
-                    except Exception:
+                    else:
                         ws.cell(row=current_row, column=col,
-                                value="[照片文件缺失]")
+                                value="[照片加载失败]")
                         current_row += 1
                 else:
                     ws.cell(row=current_row, column=col,

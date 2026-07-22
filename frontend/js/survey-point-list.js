@@ -20,7 +20,7 @@ const SurveyPointList = (function () {
     try {
       const res = await API.points.list(projectId, {
         status: status || undefined,
-        per_page: 500,
+        per_page: 5000,
       });
       if (!res.error) {
         _points = res.data.items;

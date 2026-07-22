@@ -1,6 +1,6 @@
 {
-  "version": "1.2.1",
-  "download_url": "https://github.com/lzl-pro-pro/ovital-survey/releases/download/v1.2.1/OvitalSurvey.exe",
+  "version": "1.2.2",
+  "download_url": "https://github.com/lzl-pro-pro/ovital-survey/releases/download/v1.2.2/OvitalSurvey.exe",
   "release_date": "2026-07-15",
-  "notes": "修复自动更新后无法重启的bug; 版本号改用配置变量"
+  "notes": "调查点上限500→5000; KMZ图钉图标按状态分色; 修复照片导出兼容性"
 }
