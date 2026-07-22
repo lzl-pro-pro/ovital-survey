@@ -1,6 +1,6 @@
 {
-  "version": "1.2.2",
-  "download_url": "https://github.com/lzl-pro-pro/ovital-survey/releases/download/v1.2.2/OvitalSurvey.exe",
-  "release_date": "2026-07-15",
-  "notes": "调查点上限500→5000; KMZ图钉图标按状态分色; 修复照片导出兼容性"
+  "version": "1.3.0",
+  "download_url": "https://github.com/lzl-pro-pro/ovital-survey/releases/download/v1.3.0/OvitalSurvey.exe",
+  "release_date": "2026-07-22",
+  "notes": "更名为CAD转换插件; 调查点上限5000; KMZ照片可见+原图打包; 修复各种导出bug"
 }

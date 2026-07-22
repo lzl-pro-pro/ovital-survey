@@ -370,7 +370,7 @@ const App = (function () {
 
   // ===== 初始化 =====
   async function init() {
-    console.log("[App] 正在初始化奥维野外调查插件...");
+    console.log("[App] 正在初始化奥维CAD转换插件...");
 
     // 初始化奥维SDK
     OvitalSDK.init();
@@ -389,7 +389,7 @@ const App = (function () {
     }
 
     console.log("[App] 初始化完成。SDK可用:", OvitalSDK.isAvailable());
-    Utils.toast("奥维野外调查插件已就绪", "info", 2000);
+    Utils.toast("奥维CAD转换插件已就绪", "info", 2000);
   }
 
   // DOM加载完成后初始化

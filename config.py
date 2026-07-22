@@ -10,7 +10,7 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Flask 服务配置
-VERSION = "1.2.2"
+VERSION = "1.3.0"
 # 更新服务器URL（指向 version.json）
 UPDATE_URL = "https://raw.githubusercontent.com/lzl-pro-pro/ovital-survey/main/version.json"
 

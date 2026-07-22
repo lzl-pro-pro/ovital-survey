@@ -122,7 +122,7 @@ def export_summary(project_id, point_ids=None):
     # 标题行
     ws.merge_cells("A1:K1")
     title_cell = ws["A1"]
-    title_cell.value = f"{project['name']} - 野外调查统计汇总表"
+    title_cell.value = f"{project['name']} - CAD转换统计汇总表"
     _apply_cell_style(title_cell, font=Font(name="微软雅黑", size=14, bold=True),
                       alignment=Alignment(horizontal="center", vertical="center"))
     ws.row_dimensions[1].height = 30
@@ -432,7 +432,7 @@ def export_individual(project_id, point_ids=None):
         footer_font = Font(name="微软雅黑", size=9, color="888888")
         footer_cell = ws.cell(row=row, column=1,
                               value=f"导出时间: {datetime.now().strftime('%Y-%m-%d %H:%M')} | "
-                                    f"奥维野外调查插件 v1.0")
+                                    f"奥维CAD转换插件 v1.0")
         _apply_cell_style(footer_cell, footer_font)
         ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=4)
 
